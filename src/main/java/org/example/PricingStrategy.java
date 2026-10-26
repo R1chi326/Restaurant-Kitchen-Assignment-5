@@ -1,4 +1,5 @@
 package org.example;
 
-public class PricingStrategy {
+public interface PricingStrategy {
+    double calculatePrice(double baseAmount);
 }

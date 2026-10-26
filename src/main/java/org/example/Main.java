@@ -1,17 +1,46 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    static void main() {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        IO.println(String.format("Hello and welcome!"));
+    public static void main(String[] args) {
+        System.out.println("=== RESTAURANT KITCHEN SYSTEM - STRATEGY PATTERN DEMO ===");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            IO.println("i = " + i);
-        }
+        double basePrice = 10000.0;
+        System.out.println("Base order amount: " + basePrice + "\n");
+
+        // 1. Демонстрация семейства стратегий расчета цены (Pricing)
+        System.out.println("--- 1. Pricing Strategy Family ---");
+
+        // Создаем контекст со стандартной стратегией
+        OrderPricingContext pricingContext = new OrderPricingContext(new StandardPricing());
+        System.out.println("Standard price: " + pricingContext.executeCalculation(basePrice));
+
+        // Переключение стратегии на лету (Runtime switching) -> Счастливые часы
+        pricingContext.setStrategy(new HappyHoursPricing());
+        System.out.println("After switching to Happy Hours (20% off): " + pricingContext.executeCalculation(basePrice));
+
+        // Переключение на банкетный тариф
+        pricingContext.setStrategy(new BanquetPricing());
+        System.out.println("After switching to Banquet pricing: " + pricingContext.executeCalculation(basePrice));
+
+        // Автоматический выбор с помощью Selector
+        boolean isHappyHourNow = true;
+        boolean isBanquetNow = false;
+        PricingStrategy autoSelectedPricing = PricingSelector.select(isHappyHourNow, isBanquetNow);
+        pricingContext.setStrategy(autoSelectedPricing);
+        System.out.println("Auto-selected price (HappyHour=true): " + pricingContext.executeCalculation(basePrice) + "\n");
+
+
+        // 2. Демонстрация второго семейства (Chef Assignment & External Data Isolation)
+        System.out.println("--- 2. Chef Assignment Strategy Family ---");
+
+        // Создаем фейковый внешний сервис загрузки кухни (изоляция от изменений)
+        KitchenLoadService fakeLoadService = () -> 7; // Очередь больше 5, вызовет перегрузку
+
+        ChefAssignmentContext chefContext = new ChefAssignmentContext(new FastestChefStrategy());
+        System.out.println(chefContext.executeAssignment("Order #1 (Steak)"));
+
+        // Переключаемся на стратегию, использующую внешний сервис загрузки кухни
+        chefContext.setStrategy(new LoadBalancedChefStrategy(fakeLoadService));
+        System.out.println(chefContext.executeAssignment("Order #2 (Pasta)"));
     }
 }
